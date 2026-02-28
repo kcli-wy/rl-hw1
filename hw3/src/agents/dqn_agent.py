@@ -34,7 +34,7 @@ class DQNAgent(nn.Module):
         self.num_actions = num_actions
         self.discount = discount
         self.target_update_period = target_update_period
-        self.clip_grad_norm = clip_grad_norm
+        self.clip_grad_ norm = clip_grad_norm
         self.use_double_q = use_double_q
 
         self.critic_loss = nn.HuberLoss()
