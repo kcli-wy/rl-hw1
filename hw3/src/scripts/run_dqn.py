@@ -26,7 +26,7 @@ def run_training_loop(config: dict, logger: Logger, args: argparse.Namespace):
     ptu.init_gpu(use_gpu=not args.no_gpu, gpu_id=args.which_gpu)
 
     # make the gym environment
-    multi_step = config["multi_step"]
+    multi_step = config["agent_kwargs"]["multi_step"]
     multi_step_buffer = deque(maxlen=multi_step)
     gamma = config["agent_kwargs"]["discount"]
     env = config["make_env"](eval=False)
