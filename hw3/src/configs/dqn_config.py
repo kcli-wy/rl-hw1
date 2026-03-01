@@ -30,6 +30,7 @@ def basic_dqn_config(
     use_double_q: bool = False,
     learning_starts: int = 20000,
     batch_size: int = 128,
+    multi_step: int = 1
     **kwargs
 ):
     def make_critic(observation_shape: Tuple[int, ...], num_actions: int) -> nn.Module:
@@ -76,6 +77,7 @@ def basic_dqn_config(
             "target_update_period": target_update_period,
             "clip_grad_norm": clip_grad_norm,
             "use_double_q": use_double_q,
+            "multi_step": multi_step
         },
         "exploration_schedule": exploration_schedule,
         "log_name": log_string,
