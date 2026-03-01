@@ -30,7 +30,7 @@ def basic_dqn_config(
     use_double_q: bool = False,
     learning_starts: int = 20000,
     batch_size: int = 128,
-    multi_step: int = 1
+    multi_step: int = 1,
     **kwargs
 ):
     def make_critic(observation_shape: Tuple[int, ...], num_actions: int) -> nn.Module:
