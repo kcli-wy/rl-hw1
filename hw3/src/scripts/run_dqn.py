@@ -2,6 +2,7 @@ import time
 import argparse
 import yaml
 import os
+from collections import deque
 
 from agents.dqn_agent import DQNAgent
 from configs import dqn_config
