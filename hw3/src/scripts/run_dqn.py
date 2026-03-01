@@ -95,13 +95,13 @@ def run_training_loop(config: dict, logger: Logger, args: argparse.Namespace):
         # ENDTODO
 
         next_observation, reward, done, info = env.step(action)
-        if len(n_step_buffer) == n_step or done:
+        if len(multi_step_buffer) == n_step or done:
             # 计算多步累积奖励
-            first_obs, first_act, _ = n_step_buffer[0]
+            first_obs, first_act, _ = multi_step_buffer[0]
             
             # G = r0 + gamma*r1 + gamma^2*r2 + ...
             multi_step_reward = 0
-            for i, (_, _, r) in enumerate(n_step_buffer):
+            for i, (_, _, r) in enumerate(multi_step_buffer):
                 multi_step_reward += (gamma ** i) * r
             
             # 存储：初始状态 s_t, 动作 a_t, 累积奖励 G, 截止状态 s_{t+n}
@@ -120,7 +120,7 @@ def run_training_loop(config: dict, logger: Logger, args: argparse.Namespace):
 
         # Handle episode termination
         if done:
-            n_step_buffer.clear()
+            multi_step_buffer.clear()
             reset_env_training()
 
             logger.log({
