@@ -239,7 +239,6 @@ def make_logger(config: dict, args: argparse.Namespace) -> Logger:
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--config_file", "-cfg", type=str, required=True)
-    parser.add_argument("--multi_step", "-ms", type=int, required=True)
 
     parser.add_argument("--eval_interval", "-ei", type=int, default=10000)
     parser.add_argument("--num_eval_trajectories", "-neval", type=int, default=10)
