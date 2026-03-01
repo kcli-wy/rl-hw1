@@ -72,7 +72,7 @@ class DQNAgent(nn.Module):
         done: torch.Tensor,
     ) -> dict:
         """Update the DQN critic, and return stats for logging."""
-        (batch_size, N_step) = reward.shape
+        (batch_size, ) = reward.shape
 
         # Compute target values
         with torch.no_grad():
@@ -88,7 +88,7 @@ class DQNAgent(nn.Module):
             next_q_values = torch.gather(next_qa_values, 1, next_action.unsqueeze(1)).squeeze(1)
             assert next_q_values.shape == (batch_size,), next_q_values.shape
 
-            target_values = reward + self.discount * next_q_values * (~done).float()
+            target_values = reward + (self.discount ** self.multi_step) * next_q_values * (~done).float()
             assert target_values.shape == (batch_size,), target_values.shape
             # ENDTODO
 

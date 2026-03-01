@@ -95,6 +95,7 @@ def run_training_loop(config: dict, logger: Logger, args: argparse.Namespace):
         # ENDTODO
 
         next_observation, reward, done, info = env.step(action)
+        multi_step_buffer.append((observation, action, reward))
         if len(multi_step_buffer) == multi_step or done:
             # 计算多步累积奖励
             first_obs, first_act, _ = multi_step_buffer[0]

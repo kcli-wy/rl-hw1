@@ -80,7 +80,7 @@ class MLPPolicy(nn.Module):
             # TODO: define the forward pass for a policy with a continuous action space.
             mean = self.mean_net(obs)
             return distributions.MultivariateNormal(
-                loc=mean, covariance_matrix=torch.eye(self.logstd)
+                loc=mean, covariance_matrix=torch.diag_embed(torch.exp(self.logstd))
             )
 
     def update(self, obs: np.ndarray, actions: np.ndarray, *args, **kwargs) -> dict:
@@ -104,7 +104,7 @@ class MLPPolicyPG(MLPPolicy):
         obs = ptu.from_numpy(obs)
         actions = ptu.from_numpy(actions)
         advantages = ptu.from_numpy(advantages)
-
+        
         # TODO: compute the policy gradient actor loss
         log_probs = self.forward(obs).log_prob(actions)
         loss = -torch.mean(log_probs * advantages)
