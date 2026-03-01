@@ -22,6 +22,7 @@ class DQNAgent(nn.Module):
         target_update_period: int,
         use_double_q: bool = False,
         clip_grad_norm: Optional[float] = None,
+        multi_step: int = 1
     ):
         super().__init__()
 
@@ -36,6 +37,7 @@ class DQNAgent(nn.Module):
         self.target_update_period = target_update_period
         self.clip_grad_norm = clip_grad_norm
         self.use_double_q = use_double_q
+        self.multi_step = multi_step
 
         self.critic_loss = nn.HuberLoss()
 
@@ -70,7 +72,7 @@ class DQNAgent(nn.Module):
         done: torch.Tensor,
     ) -> dict:
         """Update the DQN critic, and return stats for logging."""
-        (batch_size,) = reward.shape
+        (batch_size, N_step) = reward.shape
 
         # Compute target values
         with torch.no_grad():

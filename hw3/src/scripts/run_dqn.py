@@ -26,6 +26,9 @@ def run_training_loop(config: dict, logger: Logger, args: argparse.Namespace):
     ptu.init_gpu(use_gpu=not args.no_gpu, gpu_id=args.which_gpu)
 
     # make the gym environment
+    multi_step = config["multi_step"]
+    multi_step_buffer = deque(maxlen=multi_step)
+    gamma = config["agent_kwargs"]["discount"]
     env = config["make_env"](eval=False)
     eval_env = config["make_env"](eval=True)
     render_env = config["make_env"](eval=True, render=True)
@@ -91,31 +94,32 @@ def run_training_loop(config: dict, logger: Logger, args: argparse.Namespace):
         # ENDTODO
 
         next_observation, reward, done, info = env.step(action)
+        if len(n_step_buffer) == n_step or done:
+            # 计算多步累积奖励
+            first_obs, first_act, _ = n_step_buffer[0]
+            
+            # G = r0 + gamma*r1 + gamma^2*r2 + ...
+            multi_step_reward = 0
+            for i, (_, _, r) in enumerate(n_step_buffer):
+                multi_step_reward += (gamma ** i) * r
+            
+            # 存储：初始状态 s_t, 动作 a_t, 累积奖励 G, 截止状态 s_{t+n}
+            # 注意：如果 done 了，next_observation 就是终止状态
+            replay_buffer.insert(
+                observation=first_obs,
+                action=first_act,
+                reward=multi_step_reward,
+                next_observation=next_observation,
+                done=done,
+            )
+            
         next_observation = np.asarray(next_observation)
 
-        truncated = info.get("TimeLimit.truncated", False)
 
-        if isinstance(replay_buffer, MemoryEfficientReplayBuffer):
-            # We're using the memory-efficient replay buffer,
-            # so we only insert next_observation (not observation)
-            replay_buffer.insert(
-                action=action,
-                reward=reward,
-                done=done and not truncated,
-                next_observation=next_observation[-1, ...],
-            )
-        else:
-            # We're using the regular replay buffer
-            replay_buffer.insert(
-                observation=observation,
-                action=action,
-                reward=reward,
-                done=done and not truncated,
-                next_observation=next_observation,
-            )
 
         # Handle episode termination
         if done:
+            n_step_buffer.clear()
             reset_env_training()
 
             logger.log({
@@ -124,6 +128,7 @@ def run_training_loop(config: dict, logger: Logger, args: argparse.Namespace):
             }, step)
         else:
             observation = next_observation
+
 
         # Main DQN training loop
         if step >= config["learning_starts"]:
@@ -232,6 +237,7 @@ def make_logger(config: dict, args: argparse.Namespace) -> Logger:
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--config_file", "-cfg", type=str, required=True)
+    parser.add_argument("--multi_step", "-ms", type=int, required=True)
 
     parser.add_argument("--eval_interval", "-ei", type=int, default=10000)
     parser.add_argument("--num_eval_trajectories", "-neval", type=int, default=10)
